@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Syllid</title>
+        <style>
+            * {
+                background: black;
+                color: white;
+            }
+            textarea {
+                width: 400px;
+                height: 200px;
+                display: none;
+            }
+            button {
+                display: none;
+            }
+            .visible {
+                display: block;
+            }
+        </style>
+    </head>
+    <body>
+        <button id="stop">stop</button>
+        <button id="run" class="visible">run</button>
+        <div>
+            <textarea
+                id="text"
+                class="visible"
+                placeholder="Enter locations, one per line, e.g:&#13;&#10;https://some.url/upload&#13;&#10;https://another.url"
+            ></textarea>
+        </div>
+        <script type="module" src="/static/app.js"></script>
+    </body>
+</html>

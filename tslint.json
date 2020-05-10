@@ -1,0 +1,47 @@
+{
+    "extends": [
+        "tslint:recommended",
+        "tslint-config-prettier"
+    ],
+    "rules": {
+        "interface-name": false,
+        "no-implicit-dependencies": [
+            true,
+            "dev"
+        ],
+        "object-literal-sort-keys": false,
+        "ordered-imports": false,
+        "curly": false,
+        "no-empty-interface": false,
+        "no-console": false,
+        "no-shadowed-variable": [
+            true,
+            {
+                "underscore": false
+            }
+        ],
+        "no-empty": [
+            true,
+            "allow-empty-catch",
+            "allow-empty-functions"
+        ],
+        "no-bitwise": false,
+        "array-type": [
+            true,
+            "array"
+        ],
+        "typedef": [
+            true,
+            "call-signature",
+            "arrow-call-signature",
+            "parameter",
+            "arrow-parameter",
+            "property-declaration",
+            "variable-declaration",
+            "variable-declaration-ignore-function",
+            "object-destructuring",
+            "array-destructuring"
+        ]
+    },
+    "jsRules": true
+}
