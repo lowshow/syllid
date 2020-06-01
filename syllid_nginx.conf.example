@@ -10,10 +10,6 @@ server {
         alias {{project_path}}/node_modules/opus-stream-decoder/dist/opus-stream-decoder.js;
     }
 
-    location /audio {
-        alias {{project_path}}/.vscode/experiment/third;
-    }
-
     location /static {
         alias {{project_path}}/build;
     }

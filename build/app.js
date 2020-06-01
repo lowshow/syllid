@@ -1,27 +1,75 @@
 import { main } from "./main.js";
 import { getEl } from "./common/util.js";
-function toggleVisible(el) {
-    el.forEach((i) => {
-        i.classList.toggle("visible");
-    });
-}
-;
+import { playerUI, buttonUI, hubUI } from "./ui.js";
+import { lstn } from "./common/dom.js";
 (async () => {
     try {
-        const stopBtn = await getEl({
-            selector: "#stop"
-        });
-        const runBtn = await getEl({
-            selector: "#run"
-        });
-        const locationText = await getEl({ selector: "#text" });
-        runBtn.addEventListener("click", () => {
-            const locations = locationText.value.split("\n");
-            console.log("Locations", locations);
-            const { run, stop } = main(locations);
-            toggleVisible([stopBtn, runBtn, locationText]);
-            stopBtn.addEventListener("click", stop);
-            run();
+        const [btnContainer, addHubs, hubInput, hubAddBtn, hubsContainer, outputsContainer] = await Promise.all([
+            getEl({
+                selector: "#buttons"
+            }),
+            getEl({
+                selector: "#addHub"
+            }),
+            getEl({
+                selector: "#hubUrlInput"
+            }),
+            getEl({
+                selector: "#hubUrlAddBtn"
+            }),
+            getEl({
+                selector: "#hubs"
+            }),
+            getEl({
+                selector: "#output"
+            })
+        ]);
+        const playingChannels = [];
+        const stops = [];
+        buttonUI({
+            container: btnContainer,
+            onStop: () => {
+                stops.forEach((s) => s());
+                addHubs.classList.remove("visible");
+                outputsContainer.innerHTML = "";
+                hubsContainer.innerHTML = "";
+            },
+            onInit: () => {
+                const { addHub, channels, playChannel, removeHubs, stop } = main();
+                stops.push(stop);
+                playerUI({
+                    container: outputsContainer,
+                    onEvent: async ({ cOut, mode }) => {
+                        if (mode) {
+                            playingChannels.push(playChannel(cOut));
+                        }
+                        else {
+                            const { stopChannel } = await playingChannels[cOut];
+                            stopChannel();
+                        }
+                    },
+                    outputCount: channels
+                });
+                addHubs.classList.add("visible");
+                function deleteHubs(indices) {
+                    const hubs = removeHubs(indices);
+                    hubUI({
+                        container: hubsContainer,
+                        hubs,
+                        onDelete: deleteHubs
+                    });
+                }
+                lstn(hubAddBtn)
+                    .on("click")
+                    .do(() => {
+                    const hubs = addHub(hubInput.value);
+                    hubUI({
+                        container: hubsContainer,
+                        hubs,
+                        onDelete: deleteHubs
+                    });
+                });
+            }
         });
     }
     catch (e) {

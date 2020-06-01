@@ -7,14 +7,15 @@ declare class OpusStreamDecoder {
 
 // reference aliased via nginx
 importScripts("./opus-stream-decoder.js")
-
-const decoder: any = new OpusStreamDecoder({ onDecode })
-
 ;((self as unknown) as Worker).onmessage = async (
     event: MessageEvent
 ): Promise<void> => {
+    const decoder: any = new OpusStreamDecoder({ onDecode })
     await decoder.ready
     decoder.decode(new Uint8Array(event.data.decode))
+    await decoder.ready
+    decoder.ready.then((): void => decoder.free())
+    ;((self as unknown) as Worker).postMessage({ done: true })
 }
 
 function onDecode({ left, samplesDecoded }: any): void {
@@ -22,8 +23,6 @@ function onDecode({ left, samplesDecoded }: any): void {
     // and samplesDecoded is negative.
     // For cause, see
     // https://github.com/AnthumChris/opus-stream-decoder/issues/7
-    if (samplesDecoded < 0) {
-        return
-    }
+    if (samplesDecoded < 0) return
     ;((self as unknown) as Worker).postMessage({ decoded: left })
 }

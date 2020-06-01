@@ -5,12 +5,18 @@
  */
 // TODO: add docs
 // TODO: make work for multi-channels (stolons)
-export function player({ channels: c, sampleRate: s }) {
+export function player({ sampleRate: _sampleRate }) {
     const flushingTime = 200;
-    const channels = c;
-    const sampleRate = s;
-    const ctx = new (AudioContext || window.webkitAudioContext)();
-    let samples = new Float32Array(0);
+    const sampleRate = _sampleRate;
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    const ctx = new Ctx();
+    ctx.suspend();
+    const channels = ctx.destination.maxChannelCount;
+    ctx.destination.channelCount = ctx.destination.maxChannelCount;
+    ctx.destination.channelInterpretation = "discrete";
+    const samples = Array(channels)
+        .fill(0)
+        .map(() => new Float32Array(0));
     let startTime = ctx.currentTime;
     let interval = 0;
     const gainNode = ctx.createGain();
@@ -20,43 +26,43 @@ export function player({ channels: c, sampleRate: s }) {
         clearInterval(interval);
         interval = setInterval(flush, flushingTime);
     }
-    function feed(data) {
-        const tmp = new Float32Array(samples.length + data.length);
-        tmp.set(samples, 0);
-        tmp.set(data, samples.length);
-        samples = tmp;
+    function feed(data, channel) {
+        const tmp = new Float32Array(samples[channel].length + data.length);
+        tmp.set(samples[channel], 0);
+        tmp.set(data, samples[channel].length);
+        samples[channel] = tmp;
+        // console.log("channel", channel, samples[channel])
     }
     function flush() {
-        if (!channels || !sampleRate || !samples.length)
+        if (!sampleRate)
+            return;
+        const length = samples.reduce((l, s) => {
+            return s.length > l ? s.length : l;
+        }, 0);
+        // console.log(length)
+        if (!length)
             return;
         const bufferSource = ctx.createBufferSource();
-        const length = samples.length / channels;
-        const audioBuffer = ctx.createBuffer(channels, length, sampleRate);
+        const audioBuffer = ctx.createBuffer(channels, 
+        // 1,
+        length, sampleRate);
         for (let channel = 0; channel < channels; channel++) {
             const audioData = audioBuffer.getChannelData(channel);
-            let offset = channel;
-            let decrement = 50;
             for (let i = 0; i < length; i++) {
-                audioData[i] = samples[offset];
-                /* fadein */
-                if (i < 50) {
-                    audioData[i] = (audioData[i] * i) / 50;
-                }
-                /* fadeout*/
-                if (i >= length - 51) {
-                    audioData[i] = (audioData[i] * decrement--) / 50;
-                }
-                offset += channels;
+                audioData[i] = samples[channel][i] || 0;
             }
         }
         if (startTime < ctx.currentTime) {
             startTime = ctx.currentTime;
         }
         bufferSource.buffer = audioBuffer;
-        bufferSource.connect(gainNode);
+        // bufferSource.connect(gainNode)
+        bufferSource.connect(ctx.destination);
         bufferSource.start(startTime);
         startTime += audioBuffer.duration;
-        samples = new Float32Array(0);
+        for (let i = 0; i < samples.length; i++) {
+            samples[i] = new Float32Array(0);
+        }
     }
     function stop() {
         clearInterval(interval);
@@ -70,6 +76,7 @@ export function player({ channels: c, sampleRate: s }) {
     return {
         feed,
         stop,
-        init
+        init,
+        channels
     };
 }

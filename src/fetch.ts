@@ -1,45 +1,35 @@
-// TODO: add docs
-interface Decoder {
-    push: (messageData: any) => void
-    decode: (bytes: Uint8Array) => Promise<any>
-}
+import { last } from "./common/util.js"
 
 // TODO: add docs
 export async function processURLList(
     fileList: string[],
+    worker: Worker,
     onBuffer: (buffer: Float32Array) => void
 ): Promise<void> {
-    const worker: Worker = new Worker("/static/decoder/decoder.js")
+    const decoding: string[] = []
+    const decodeFiles: { [index: string]: boolean } = {}
 
-    const { decode, push }: Decoder = ((): Decoder => {
-        const data: number[] = []
-        let lastCheck: number = 0
-        return {
-            push: (state: number): void => {
-                data.push(state)
-            },
-            decode: (bytes: Uint8Array): Promise<any> => {
-                return new Promise((resolve: any): void => {
-                    worker.postMessage({ decode: bytes.buffer }, [bytes.buffer])
-                    const interval: number = setInterval((): void => {
-                        if (data.length === lastCheck) {
-                            clearInterval(interval)
-                            data.length = 0
-                            resolve()
-                        } else {
-                            lastCheck = data.length
-                        }
-                    }, 100)
-                })
-            }
-        }
-    })()
+    // const decodeIndex: { [index: string]: number } = {}
+    // const decodedData: Float32Array[][] = []
+
+    function decode(bytes: Uint8Array, file: string): Promise<any> {
+        return new Promise((resolve: any): void => {
+            worker.postMessage({ decode: bytes.buffer }, [bytes.buffer])
+            const interval: number = setInterval((): void => {
+                if (!decodeFiles[file]) return
+                resolve()
+                clearInterval(interval)
+            }, 50)
+        })
+    }
 
     worker.onmessage = (event: MessageEvent): void => {
-        const { decoded }: any = event.data
+        const { decoded, done }: any = event.data
         if (decoded) {
             onBuffer(decoded)
-            push(1)
+            // decodedData[decodeIndex[last(decoding)]].push(decoded)
+        } else if (done) {
+            decodeFiles[last(decoding)] = true
         }
     }
 
@@ -58,15 +48,19 @@ export async function processURLList(
             value
         }: ReadableStreamReadResult<Uint8Array>): Promise<any> {
             if (done) return
-
             if (value) {
-                await decode(value)
+                await decode(value, file)
             }
 
             return reader.read().then(evalChunk)
         }
 
         // TODO fail on decode() error and exit read() loop
+        decoding.push(file)
+        decodeFiles[file] = false
+        // const index: number = decoding.length - 1
+        // decodedData[decodeIndex[index]] = []
         await reader.read().then(evalChunk)
+        // console.log("done", file, decodedData[decodeIndex[index]])
     }
 }

@@ -1,35 +1,29 @@
+import { last } from "./common/util.js";
 // TODO: add docs
-export async function processURLList(fileList, onBuffer) {
-    const worker = new Worker("/static/decoder/decoder.js");
-    const { decode, push } = (() => {
-        const data = [];
-        let lastCheck = 0;
-        return {
-            push: (state) => {
-                data.push(state);
-            },
-            decode: (bytes) => {
-                return new Promise((resolve) => {
-                    worker.postMessage({ decode: bytes.buffer }, [bytes.buffer]);
-                    const interval = setInterval(() => {
-                        if (data.length === lastCheck) {
-                            clearInterval(interval);
-                            data.length = 0;
-                            resolve();
-                        }
-                        else {
-                            lastCheck = data.length;
-                        }
-                    }, 100);
-                });
-            }
-        };
-    })();
+export async function processURLList(fileList, worker, onBuffer) {
+    const decoding = [];
+    const decodeFiles = {};
+    // const decodeIndex: { [index: string]: number } = {}
+    // const decodedData: Float32Array[][] = []
+    function decode(bytes, file) {
+        return new Promise((resolve) => {
+            worker.postMessage({ decode: bytes.buffer }, [bytes.buffer]);
+            const interval = setInterval(() => {
+                if (!decodeFiles[file])
+                    return;
+                resolve();
+                clearInterval(interval);
+            }, 50);
+        });
+    }
     worker.onmessage = (event) => {
-        const { decoded } = event.data;
+        const { decoded, done } = event.data;
         if (decoded) {
             onBuffer(decoded);
-            push(1);
+            // decodedData[decodeIndex[last(decoding)]].push(decoded)
+        }
+        else if (done) {
+            decodeFiles[last(decoding)] = true;
         }
     };
     for (const file of fileList) {
@@ -43,11 +37,16 @@ export async function processURLList(fileList, onBuffer) {
             if (done)
                 return;
             if (value) {
-                await decode(value);
+                await decode(value, file);
             }
             return reader.read().then(evalChunk);
         }
         // TODO fail on decode() error and exit read() loop
+        decoding.push(file);
+        decodeFiles[file] = false;
+        // const index: number = decoding.length - 1
+        // decodedData[decodeIndex[index]] = []
         await reader.read().then(evalChunk);
+        // console.log("done", file, decodedData[decodeIndex[index]])
     }
 }
