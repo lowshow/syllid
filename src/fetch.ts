@@ -9,9 +9,6 @@ export async function processURLList(
     const decoding: string[] = []
     const decodeFiles: { [index: string]: boolean } = {}
 
-    // const decodeIndex: { [index: string]: number } = {}
-    // const decodedData: Float32Array[][] = []
-
     function decode(bytes: Uint8Array, file: string): Promise<any> {
         return new Promise((resolve: any): void => {
             worker.postMessage({ decode: bytes.buffer }, [bytes.buffer])
@@ -27,7 +24,6 @@ export async function processURLList(
         const { decoded, done }: any = event.data
         if (decoded) {
             onBuffer(decoded)
-            // decodedData[decodeIndex[last(decoding)]].push(decoded)
         } else if (done) {
             decodeFiles[last(decoding)] = true
         }
@@ -58,9 +54,6 @@ export async function processURLList(
         // TODO fail on decode() error and exit read() loop
         decoding.push(file)
         decodeFiles[file] = false
-        // const index: number = decoding.length - 1
-        // decodedData[decodeIndex[index]] = []
         await reader.read().then(evalChunk)
-        // console.log("done", file, decodedData[decodeIndex[index]])
     }
 }

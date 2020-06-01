@@ -3,8 +3,6 @@ import { last } from "./common/util.js";
 export async function processURLList(fileList, worker, onBuffer) {
     const decoding = [];
     const decodeFiles = {};
-    // const decodeIndex: { [index: string]: number } = {}
-    // const decodedData: Float32Array[][] = []
     function decode(bytes, file) {
         return new Promise((resolve) => {
             worker.postMessage({ decode: bytes.buffer }, [bytes.buffer]);
@@ -20,7 +18,6 @@ export async function processURLList(fileList, worker, onBuffer) {
         const { decoded, done } = event.data;
         if (decoded) {
             onBuffer(decoded);
-            // decodedData[decodeIndex[last(decoding)]].push(decoded)
         }
         else if (done) {
             decodeFiles[last(decoding)] = true;
@@ -44,9 +41,6 @@ export async function processURLList(fileList, worker, onBuffer) {
         // TODO fail on decode() error and exit read() loop
         decoding.push(file);
         decodeFiles[file] = false;
-        // const index: number = decoding.length - 1
-        // decodedData[decodeIndex[index]] = []
         await reader.read().then(evalChunk);
-        // console.log("done", file, decodedData[decodeIndex[index]])
     }
 }
