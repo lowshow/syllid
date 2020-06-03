@@ -17,15 +17,18 @@ export function el(tagName, options) {
 }
 // TODO: add doc
 export function mnt(parent) {
-    return (children) => {
-        if (Array.isArray(children)) {
-            children.forEach((c) => {
-                parent.appendChild(c);
-            });
-        }
-        else {
-            parent.appendChild(children);
-        }
+    return (children, options = {
+        prepend: false
+    }) => {
+        const c = Array.isArray(children) ? children : [children];
+        c.forEach((child) => {
+            if (options.prepend) {
+                parent.prepend(child);
+            }
+            else {
+                parent.append(child);
+            }
+        });
     };
 }
 // TODO: add doc
@@ -48,8 +51,7 @@ export function lstn(element) {
 }
 // TODO: add doc
 export function umnt(element) {
-    var _a;
-    (_a = element.parentElement) === null || _a === void 0 ? void 0 : _a.removeChild(element);
+    element.remove();
 }
 // TODO: add doc
 export function emt(element) {

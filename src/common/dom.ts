@@ -27,18 +27,27 @@ export function el<K extends keyof HTMLElementTagNameMap>(
     return document.createElement(tagName, options)
 }
 
-export type MntFn = (children: HTMLElement | HTMLElement[]) => void
+export type MntFn = (
+    children: HTMLElement | HTMLElement[],
+    options?: { prepend?: boolean }
+) => void
 
 // TODO: add doc
 export function mnt(parent: HTMLElement): MntFn {
-    return (children: HTMLElement | HTMLElement[]): void => {
-        if (Array.isArray(children)) {
-            children.forEach((c: HTMLElement): void => {
-                parent.appendChild(c)
-            })
-        } else {
-            parent.appendChild(children)
+    return (
+        children: HTMLElement | HTMLElement[],
+        options: { prepend?: boolean } = {
+            prepend: false
         }
+    ): void => {
+        const c: HTMLElement[] = Array.isArray(children) ? children : [children]
+        c.forEach((child: HTMLElement): void => {
+            if (options.prepend) {
+                parent.prepend(child)
+            } else {
+                parent.append(child)
+            }
+        })
     }
 }
 
@@ -81,7 +90,7 @@ export function lstn<T extends HTMLElement>(element: T): Listen {
 
 // TODO: add doc
 export function umnt(element: HTMLElement): void {
-    element.parentElement?.removeChild(element)
+    element.remove()
 }
 
 // TODO: add doc

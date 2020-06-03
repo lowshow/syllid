@@ -1,11 +1,11 @@
 import { player, PlayerFn } from "./player.js"
 import { processURLList } from "./fetch.js"
 import { sleep, randInt, slsh } from "./common/util.js"
-import { Resolve } from "./common/interfaces.js"
+import { Resolve, Reject } from "./common/interfaces.js"
 
 export interface Main {
     playChannel: (index: number) => Promise<PlayChannel>
-    addHub: (hub: string) => string[]
+    addHub: (hub: string) => Promise<string[]>
     removeHubs: (indices: number[]) => string[]
     stop: () => void
     channels: number
@@ -37,10 +37,12 @@ type Playlist = PlaylistItem[]
 
 function createStreams({
     streams,
-    channels
+    channels,
+    stopChannel
 }: {
     streams: Stream[]
     channels: number
+    stopChannel: (channel: number) => void
 }): void {
     for (let i: number = 0; i < channels; i++) {
         streams[i] = {
@@ -53,6 +55,7 @@ function createStreams({
             freshLocation: false,
             interval: 0,
             stopChannel: (): void => {
+                stopChannel(i)
                 clearInterval(streams[i].interval)
                 streams[i].running = false
             }
@@ -98,25 +101,32 @@ function getStreamPath(stream: Stream): string {
         : stream.location
 }
 
-function addHub(locations: string[]): (hub: string) => string[] {
-    return (hub: string): string[] => {
-        locations.push(slsh(hub))
-        return locations
+function validatePlaylist(items: Playlist): Playlist {
+    if (!Array.isArray(items)) {
+        throw Error("Playlist is not an array.")
     }
-}
-
-function removeHubs(locations: string[]): (indices: number[]) => string[] {
-    return (indices: number[]): string[] => {
-        locations = locations.filter((_: string, i: number): boolean => {
-            return indices.indexOf(i) > -1
-        })
-        return locations
-    }
+    items.forEach((i: PlaylistItem): void => {
+        try {
+            new URL(i.url).toString()
+        } catch {
+            throw Error(`${i.url} in playlist is invalid URL.`)
+        }
+        if (!i.id || typeof i.id !== "string") {
+            throw Error(`${i.id || "Missing ID"} in playlist is invalid ID.`)
+        }
+    })
+    return items
 }
 
 export function main(): Main {
     // TODO: setup channel selection
-    const { feed, init, stop: playerStop, channels }: PlayerFn = player({
+    const {
+        feed,
+        init,
+        stop: playerStop,
+        channels,
+        stopChannel
+    }: PlayerFn = player({
         sampleRate: 48000
     })
 
@@ -124,7 +134,7 @@ export function main(): Main {
 
     const locations: string[] = []
     const streams: Stream[] = []
-    createStreams({ streams, channels })
+    createStreams({ streams, channels, stopChannel })
 
     function playChannel(index: number): Promise<PlayChannel> {
         return new Promise(
@@ -151,14 +161,12 @@ export function main(): Main {
                             return response.json()
                         })
                         .then((items: Playlist): void => {
-                            if (!Array.isArray(items)) {
-                                console.error(items)
-                                throw Error("Data not correct format")
-                            }
-                            items.forEach(({ id, url }: PlaylistItem): void => {
-                                stream.fileList.push(url)
-                                stream.idList.push(id)
-                            })
+                            validatePlaylist(items).forEach(
+                                ({ id, url }: PlaylistItem): void => {
+                                    stream.fileList.push(url)
+                                    stream.idList.push(id)
+                                }
+                            )
                         })
                         .catch((e: Error): void => {
                             console.error(e.message)
@@ -186,7 +194,8 @@ export function main(): Main {
                         fetchList,
                         worker,
                         (buffer: Float32Array): void => {
-                            feed(buffer, index)
+                            if (streams[index].running)
+                                feed({ channel: index, data: buffer })
                         }
                     )
                 }
@@ -196,8 +205,24 @@ export function main(): Main {
 
     return {
         playChannel,
-        addHub: addHub(locations),
-        removeHubs: removeHubs(locations),
+        addHub: (hub: string): Promise<string[]> => {
+            return new Promise(
+                (resolve: Resolve<string[]>, reject: Reject): void => {
+                    try {
+                        locations.push(slsh(new URL(hub).toString()))
+                        resolve(locations)
+                    } catch (e) {
+                        reject(`${hub} is not a valid URL.`)
+                    }
+                }
+            )
+        },
+        removeHubs: (indices: number[]): string[] => {
+            indices.forEach((index: number): void => {
+                locations.splice(index, 1)
+            })
+            return locations
+        },
         stop: (): void => {
             playerStop()
             streams.forEach((stream: Stream): void => {

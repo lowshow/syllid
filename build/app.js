@@ -1,29 +1,26 @@
 import { main } from "./main.js";
 import { getEl } from "./common/util.js";
 import { playerUI, buttonUI, hubUI } from "./ui.js";
-import { lstn } from "./common/dom.js";
+import { lstn, el, mnt, umnt } from "./common/dom.js";
 (async () => {
     try {
-        const [btnContainer, addHubs, hubInput, hubAddBtn, hubsContainer, outputsContainer] = await Promise.all([
-            getEl({
-                selector: "#buttons"
-            }),
-            getEl({
-                selector: "#addHub"
-            }),
-            getEl({
-                selector: "#hubUrlInput"
-            }),
-            getEl({
-                selector: "#hubUrlAddBtn"
-            }),
-            getEl({
-                selector: "#hubs"
-            }),
-            getEl({
-                selector: "#output"
-            })
-        ]);
+        const root = await getEl({
+            selector: "#appContainer"
+        });
+        const btnContainer = el("div");
+        const outputsContainer = el("div");
+        const addHubs = el("div");
+        addHubs.classList.add("addHub");
+        const hubInput = el("input");
+        hubInput.type = "url";
+        hubInput.placeholder = "hub url e.g. http://hub.url/1234";
+        const hubAddBtn = el("button");
+        hubAddBtn.classList.add("btn");
+        hubAddBtn.textContent = "Add hub";
+        const hubsContainer = el("div");
+        const mntHub = mnt(addHubs);
+        mntHub([hubInput, hubAddBtn]);
+        mnt(root)([btnContainer, outputsContainer, addHubs, hubsContainer]);
         const playingChannels = [];
         const stops = [];
         buttonUI({
@@ -52,7 +49,10 @@ import { lstn } from "./common/dom.js";
                 });
                 addHubs.classList.add("visible");
                 function deleteHubs(indices) {
+                    if (!indices.length)
+                        return;
                     const hubs = removeHubs(indices);
+                    hubsContainer.innerHTML = "";
                     hubUI({
                         container: hubsContainer,
                         hubs,
@@ -62,11 +62,22 @@ import { lstn } from "./common/dom.js";
                 lstn(hubAddBtn)
                     .on("click")
                     .do(() => {
-                    const hubs = addHub(hubInput.value);
-                    hubUI({
-                        container: hubsContainer,
-                        hubs,
-                        onDelete: deleteHubs
+                    addHub(hubInput.value)
+                        .then((hubs) => {
+                        hubsContainer.innerHTML = "";
+                        hubUI({
+                            container: hubsContainer,
+                            hubs,
+                            onDelete: deleteHubs
+                        });
+                    })
+                        .catch((err) => {
+                        const hubErr = el("p");
+                        hubErr.textContent = err;
+                        mntHub(hubErr, { prepend: true });
+                        setTimeout(() => {
+                            umnt(hubErr);
+                        }, 5000);
                     });
                 });
             }

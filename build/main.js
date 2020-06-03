@@ -1,7 +1,7 @@
 import { player } from "./player.js";
 import { processURLList } from "./fetch.js";
 import { sleep, randInt, slsh } from "./common/util.js";
-function createStreams({ streams, channels }) {
+function createStreams({ streams, channels, stopChannel }) {
     for (let i = 0; i < channels; i++) {
         streams[i] = {
             count: 0,
@@ -13,6 +13,7 @@ function createStreams({ streams, channels }) {
             freshLocation: false,
             interval: 0,
             stopChannel: () => {
+                stopChannel(i);
                 clearInterval(streams[i].interval);
                 streams[i].running = false;
             }
@@ -39,29 +40,32 @@ function getStreamPath(stream) {
         ? new URL(`${stream.idList[stream.idList.length - 1]}`, stream.location).toString()
         : stream.location;
 }
-function addHub(locations) {
-    return (hub) => {
-        locations.push(slsh(hub));
-        return locations;
-    };
-}
-function removeHubs(locations) {
-    return (indices) => {
-        locations = locations.filter((_, i) => {
-            return indices.indexOf(i) > -1;
-        });
-        return locations;
-    };
+function validatePlaylist(items) {
+    if (!Array.isArray(items)) {
+        throw Error("Playlist is not an array.");
+    }
+    items.forEach((i) => {
+        try {
+            new URL(i.url).toString();
+        }
+        catch (_a) {
+            throw Error(`${i.url} in playlist is invalid URL.`);
+        }
+        if (!i.id || typeof i.id !== "string") {
+            throw Error(`${i.id || "Missing ID"} in playlist is invalid ID.`);
+        }
+    });
+    return items;
 }
 export function main() {
     // TODO: setup channel selection
-    const { feed, init, stop: playerStop, channels } = player({
+    const { feed, init, stop: playerStop, channels, stopChannel } = player({
         sampleRate: 48000
     });
     init();
     const locations = [];
     const streams = [];
-    createStreams({ streams, channels });
+    createStreams({ streams, channels, stopChannel });
     function playChannel(index) {
         return new Promise(async (resolve) => {
             // fetch opus list (loop per channel)
@@ -84,11 +88,7 @@ export function main() {
                     return response.json();
                 })
                     .then((items) => {
-                    if (!Array.isArray(items)) {
-                        console.error(items);
-                        throw Error("Data not correct format");
-                    }
-                    items.forEach(({ id, url }) => {
+                    validatePlaylist(items).forEach(({ id, url }) => {
                         stream.fileList.push(url);
                         stream.idList.push(id);
                     });
@@ -112,15 +112,31 @@ export function main() {
                 const fetchList = stream.fileList.slice(stream.processedIndex);
                 stream.processedIndex += fetchList.length;
                 await processURLList(fetchList, worker, (buffer) => {
-                    feed(buffer, index);
+                    if (streams[index].running)
+                        feed({ channel: index, data: buffer });
                 });
             }
         });
     }
     return {
         playChannel,
-        addHub: addHub(locations),
-        removeHubs: removeHubs(locations),
+        addHub: (hub) => {
+            return new Promise((resolve, reject) => {
+                try {
+                    locations.push(slsh(new URL(hub).toString()));
+                    resolve(locations);
+                }
+                catch (e) {
+                    reject(`${hub} is not a valid URL.`);
+                }
+            });
+        },
+        removeHubs: (indices) => {
+            indices.forEach((index) => {
+                locations.splice(index, 1);
+            });
+            return locations;
+        },
         stop: () => {
             playerStop();
             streams.forEach((stream) => {

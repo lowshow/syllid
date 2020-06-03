@@ -2,52 +2,29 @@ import { main, Main, PlayChannel } from "./main.js"
 import { getEl } from "./common/util.js"
 import { playerUI, ToggleFnEvent, buttonUI, hubUI } from "./ui.js"
 import { F } from "./common/interfaces.js"
-import { lstn } from "./common/dom.js"
-
-type DOMItems = [
-    HTMLDivElement,
-    HTMLDivElement,
-    HTMLInputElement,
-    HTMLButtonElement,
-    HTMLDivElement,
-    HTMLDivElement
-]
+import { lstn, el, mnt, MntFn, umnt } from "./common/dom.js"
 ;(async (): Promise<void> => {
     try {
-        const [
-            btnContainer,
-            addHubs,
-            hubInput,
-            hubAddBtn,
-            hubsContainer,
-            outputsContainer
-        ]: DOMItems = await Promise.all<
-            HTMLDivElement,
-            HTMLDivElement,
-            HTMLInputElement,
-            HTMLButtonElement,
-            HTMLDivElement,
-            HTMLDivElement
-        >([
-            getEl<HTMLDivElement>({
-                selector: "#buttons"
-            }),
-            getEl<HTMLDivElement>({
-                selector: "#addHub"
-            }),
-            getEl<HTMLInputElement>({
-                selector: "#hubUrlInput"
-            }),
-            getEl<HTMLButtonElement>({
-                selector: "#hubUrlAddBtn"
-            }),
-            getEl<HTMLDivElement>({
-                selector: "#hubs"
-            }),
-            getEl<HTMLDivElement>({
-                selector: "#output"
-            })
-        ])
+        const root: HTMLDivElement = await getEl<HTMLDivElement>({
+            selector: "#appContainer"
+        })
+
+        const btnContainer: HTMLDivElement = el("div")
+        const outputsContainer: HTMLDivElement = el("div")
+        const addHubs: HTMLDivElement = el("div")
+        addHubs.classList.add("addHub")
+        const hubInput: HTMLInputElement = el("input")
+        hubInput.type = "url"
+        hubInput.placeholder = "hub url e.g. http://hub.url/1234"
+        const hubAddBtn: HTMLButtonElement = el("button")
+        hubAddBtn.classList.add("btn")
+        hubAddBtn.textContent = "Add hub"
+        const hubsContainer: HTMLDivElement = el("div")
+
+        const mntHub: MntFn = mnt(addHubs)
+        mntHub([hubInput, hubAddBtn])
+        mnt(root)([btnContainer, outputsContainer, addHubs, hubsContainer])
+
         const playingChannels: Promise<PlayChannel>[] = []
         const stops: F<void, void>[] = []
 
@@ -92,7 +69,9 @@ type DOMItems = [
                 addHubs.classList.add("visible")
 
                 function deleteHubs(indices: number[]): void {
+                    if (!indices.length) return
                     const hubs: string[] = removeHubs(indices)
+                    hubsContainer.innerHTML = ""
                     hubUI({
                         container: hubsContainer,
                         hubs,
@@ -103,12 +82,23 @@ type DOMItems = [
                 lstn(hubAddBtn)
                     .on("click")
                     .do((): void => {
-                        const hubs: string[] = addHub(hubInput.value)
-                        hubUI({
-                            container: hubsContainer,
-                            hubs,
-                            onDelete: deleteHubs
-                        })
+                        addHub(hubInput.value)
+                            .then((hubs: string[]): void => {
+                                hubsContainer.innerHTML = ""
+                                hubUI({
+                                    container: hubsContainer,
+                                    hubs,
+                                    onDelete: deleteHubs
+                                })
+                            })
+                            .catch((err: string): void => {
+                                const hubErr: HTMLParagraphElement = el("p")
+                                hubErr.textContent = err
+                                mntHub(hubErr, { prepend: true })
+                                setTimeout((): void => {
+                                    umnt(hubErr)
+                                }, 5000)
+                            })
                     })
             }
         })
