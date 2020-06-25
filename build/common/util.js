@@ -23,3 +23,9 @@ export function sleep(seconds) {
         setTimeout(() => resolve(), seconds * 1000);
     });
 }
+export function slsh(url) {
+    return url.endsWith("/") ? url : `${url}/`;
+}
+export function last(arr) {
+    return arr[arr.length - 1];
+}

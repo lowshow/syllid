@@ -31,3 +31,11 @@ export function sleep(seconds: number): Promise<void> {
         setTimeout((): void => resolve(), seconds * 1000)
     })
 }
+
+export function slsh(url: string): string {
+    return url.endsWith("/") ? url : `${url}/`
+}
+
+export function last<T>(arr: T[]): T {
+    return arr[arr.length - 1]
+}

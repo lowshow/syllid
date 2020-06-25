@@ -2,35 +2,21 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <title>Syllid</title>
-        <style>
-            * {
-                background: black;
-                color: white;
-            }
-            textarea {
-                width: 400px;
-                height: 200px;
-                display: none;
-            }
-            button {
-                display: none;
-            }
-            .visible {
-                display: block;
-            }
-        </style>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>
+            syllid &bull; experimental audio decoder and multi player
+        </title>
+        <link href="main.css" rel="stylesheet" />
     </head>
     <body>
-        <button id="stop">stop</button>
-        <button id="run" class="visible">run</button>
-        <div>
-            <textarea
-                id="text"
-                class="visible"
-                placeholder="Enter locations, one per line, e.g:&#13;&#10;https://some.url/upload&#13;&#10;https://another.url"
-            ></textarea>
+        <div class="root">
+            <div class="rootInner">
+                <noscript>
+                    Unfortunately, without JavaScript, you cannot use this page.
+                </noscript>
+                <div id="appContainer"></div>
+            </div>
         </div>
-        <script type="module" src="/static/app.js"></script>
+        <script type="module" src="static/app.js"></script>
     </body>
 </html>

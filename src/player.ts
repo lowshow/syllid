@@ -8,105 +8,141 @@ declare global {
 
 // TODO: add docs
 export interface PlayerFn {
-    feed: (data: Float32Array) => void
+    getState: () => PlayerState
+    feed: (args: { data: Float32Array; channel: number }) => void
     stop: () => void
+    stopChannel: (channel: number) => void
     init: () => void
+    channels: number
+}
+
+interface PlayerState {
+    samples: Float32Array[]
+    startTimes: number[]
+    interval: number
+    channels: number
+    sampleRate: number
+    buffers: (AudioBufferSourceNode | undefined)[][]
+}
+
+function flush({
+    ctx,
+    merger,
+    state
+}: {
+    ctx: AudioContext
+    merger: ChannelMergerNode
+    state: PlayerState
+}): void {
+    for (let channel: number = 0; channel < state.channels; channel++) {
+        const s: Float32Array = state.samples[channel]
+        state.samples[channel] = new Float32Array(0)
+        if (!s.length) continue
+
+        const bufferSource: AudioBufferSourceNode = ctx.createBufferSource()
+        const audioBuffer: AudioBuffer = ctx.createBuffer(
+            1,
+            s.length,
+            state.sampleRate
+        )
+
+        const audioData: Float32Array = audioBuffer.getChannelData(0)
+        audioData.set(s, 0)
+
+        if (state.startTimes[channel] < ctx.currentTime) {
+            state.startTimes[channel] = ctx.currentTime
+        }
+
+        bufferSource.buffer = audioBuffer
+        bufferSource.connect(merger, 0, channel)
+
+        bufferSource.start(state.startTimes[channel])
+        const index: number = state.buffers[channel].length
+        bufferSource.addEventListener("ended", (): void => {
+            state.buffers[channel][index] = undefined
+        })
+        state.buffers[channel].push(bufferSource)
+        state.startTimes[channel] += audioBuffer.duration
+    }
 }
 
 /**
  *
- * @param channels
  * @param sampleRate
  */
 // TODO: add docs
-// TODO: make work for multi-channels (stolons)
 export function player({
-    channels: c,
-    sampleRate: s
+    sampleRate: _sampleRate
 }: {
-    channels: number
     sampleRate: number
 }): PlayerFn {
+    if (!_sampleRate) throw Error("No sample rate provided.")
+
     const flushingTime: number = 200
-    const channels: number = c
-    const sampleRate: number = s
-    const ctx: AudioContext = new (AudioContext || window.webkitAudioContext)()
+    const sampleRate: number = _sampleRate
+    const Ctx: typeof AudioContext =
+        window.AudioContext || window.webkitAudioContext
+    const ctx: AudioContext = new Ctx()
+    ctx.suspend()
+    const channels: number = ctx.destination.maxChannelCount
+    ctx.destination.channelCount = channels
+    ctx.destination.channelInterpretation = "discrete"
 
-    let samples: Float32Array = new Float32Array(0)
-    let startTime: number = ctx.currentTime
-    let interval: number = 0
-
-    const gainNode: GainNode = ctx.createGain()
-    gainNode.gain.value = 1
-    gainNode.connect(ctx.destination)
-
-    function init(): void {
-        clearInterval(interval)
-        interval = setInterval(flush, flushingTime)
+    const state: PlayerState = {
+        channels,
+        sampleRate,
+        samples: Array(channels)
+            .fill(0)
+            .map((): Float32Array => new Float32Array(0)),
+        startTimes: Array(channels).fill(ctx.currentTime),
+        interval: 0,
+        buffers: Array(channels).fill([])
     }
 
-    function feed(data: Float32Array): void {
-        const tmp: Float32Array = new Float32Array(samples.length + data.length)
-        tmp.set(samples, 0)
-        tmp.set(data, samples.length)
-        samples = tmp
-    }
-
-    function flush(): void {
-        if (!channels || !sampleRate || !samples.length) return
-        const bufferSource: AudioBufferSourceNode = ctx.createBufferSource()
-        const length: number = samples.length / channels
-        const audioBuffer: AudioBuffer = ctx.createBuffer(
-            channels,
-            length,
-            sampleRate
-        )
-
-        for (let channel: number = 0; channel < channels; channel++) {
-            const audioData: Float32Array = audioBuffer.getChannelData(channel)
-            let offset: number = channel
-            let decrement: number = 50
-            for (let i: number = 0; i < length; i++) {
-                audioData[i] = samples[offset]
-                /* fadein */
-                if (i < 50) {
-                    audioData[i] = (audioData[i] * i) / 50
-                }
-                /* fadeout*/
-                if (i >= length - 51) {
-                    audioData[i] = (audioData[i] * decrement--) / 50
-                }
-                offset += channels
-            }
-        }
-
-        if (startTime < ctx.currentTime) {
-            startTime = ctx.currentTime
-        }
-
-        bufferSource.buffer = audioBuffer
-        bufferSource.connect(gainNode)
-        bufferSource.start(startTime)
-        startTime += audioBuffer.duration
-        samples = new Float32Array(0)
-    }
-
-    function stop(): void {
-        clearInterval(interval)
-        interval = 0
-        gainNode.gain.setValueAtTime(gainNode.gain.value, ctx.currentTime)
-        gainNode.gain.exponentialRampToValueAtTime(
-            0.000001,
-            ctx.currentTime + 1
-        )
-        setTimeout((): void => {
-            ctx.suspend()
-        }, 1010)
-    }
+    const merger: ChannelMergerNode = ctx.createChannelMerger(channels)
+    merger.connect(ctx.destination)
 
     return {
-        feed,
-        stop,
-        init
+        channels,
+        getState: (): PlayerState => state,
+        feed: ({
+            channel,
+            data
+        }: {
+            data: Float32Array
+            channel: number
+        }): void => {
+            const tmp: Float32Array = new Float32Array(
+                state.samples[channel].length + data.length
+            )
+            tmp.set(state.samples[channel], 0)
+            tmp.set(data, state.samples[channel].length)
+            state.samples[channel] = tmp
+        },
+        stopChannel: (channel: number): void => {
+            state.buffers[channel].forEach(
+                (buffer: AudioBufferSourceNode | undefined): void => {
+                    buffer?.disconnect(merger, 0, channel)
+                    buffer?.stop(ctx.currentTime)
+                }
+            )
+            state.samples[channel] = new Float32Array(0)
+        },
+        stop: (): void => {
+            clearInterval(state.interval)
+            state.interval = 0
+            ctx.suspend()
+        },
+        init: (): void => {
+            clearInterval(state.interval)
+            state.interval = setInterval((): void => {
+                flush({
+                    ctx,
+                    merger,
+                    state
+                })
+            }, flushingTime)
+            ctx.resume()
+        }
     }
 }

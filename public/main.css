@@ -1,0 +1,106 @@
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-size: 16px;
+    color: white;
+    font-family: Helvetica, Arial, sans-serif;
+}
+
+.root {
+    min-height: 100%;
+    background: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.rootInner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 320px;
+    padding: 10rem 1rem;
+    flex-direction: column;
+}
+
+.btn {
+    font-size: 1.2rem;
+    padding: 1rem;
+    border-radius: 4px;
+    background: transparent;
+    color: white;
+    border: solid 2px white;
+    margin: 0;
+    cursor: pointer;
+    transition: background 500ms;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.btn:hover {
+    background: #222;
+}
+textarea {
+    width: 400px;
+    height: 200px;
+    display: none;
+}
+
+.visible {
+    display: block;
+}
+
+.addHub {
+    width: 100%;
+    margin: 2rem 0;
+    display: none;
+}
+
+.addHub.visible {
+    display: block;
+}
+
+.addHub input {
+    display: block;
+    padding: 0.8rem;
+    border-radius: 0.25rem;
+    width: 100%;
+    font-size: 1rem;
+    box-sizing: border-box;
+    background: transparent;
+    color: white;
+    border: 2px solid white;
+    transition: border-color 500ms;
+    margin-bottom: 0.5rem;
+}
+
+.addHub input:focus,
+.addHub input:hover {
+    border-color: #2cb;
+}
+.item__box {
+    border: 2px solid white;
+    width: 100%;
+}
+.item__check {
+    display: none;
+}
+.item__label {
+    padding: 1rem 0.7rem;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    position: relative;
+    transition: background 500ms;
+}
+.item__check:not(:checked) + .item__label:hover {
+    background: #222;
+}
+.item__check:checked + .item__label {
+    background: #273c3c;
+}
