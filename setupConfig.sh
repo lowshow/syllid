@@ -22,4 +22,4 @@ sudo ln -s "$CURR_PATH/config/syllid_nginx.conf" \
     "/etc/nginx/sites-enabled/"
 
 # Restart nginx to enable conf file
-# sudo service nginx restart
+sudo service nginx restart
