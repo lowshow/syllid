@@ -145,7 +145,7 @@ export function main(): Main {
 
                 resolve(streams[index])
 
-                const worker: Worker = new Worker("/static/decoder/decoder.js")
+                const worker: Worker = new Worker("static/decoder/decoder.js")
 
                 function populate(): void {
                     const stream: Stream = streams[index]

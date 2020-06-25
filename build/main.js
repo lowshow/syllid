@@ -72,7 +72,7 @@ export function main() {
             // NOTE: because of redirect, list of ids will need to be
             // URLs (or an id/url map, or provide a base url)
             resolve(streams[index]);
-            const worker = new Worker("/static/decoder/decoder.js");
+            const worker = new Worker("static/decoder/decoder.js");
             function populate() {
                 const stream = streams[index];
                 setStreamLocation({ locations, stream });
