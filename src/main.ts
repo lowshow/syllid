@@ -24,6 +24,7 @@ interface Stream {
     count: number
     running: boolean
     interval: number
+    fetchInterval: number
     stopChannel: () => void
 }
 
@@ -54,9 +55,11 @@ function createStreams({
             running: false,
             freshLocation: false,
             interval: 0,
+            fetchInterval: 0,
             stopChannel: (): void => {
                 stopChannel(i)
                 clearInterval(streams[i].interval)
+                clearInterval(streams[i].fetchInterval)
                 streams[i].running = false
             }
         }
@@ -177,19 +180,17 @@ export function main(): Main {
                 streams[index].interval = setInterval(populate, 5000)
                 streams[index].running = true
 
-                while (true) {
-                    const stream: Stream = streams[index]
-                    if (!stream.running) {
-                        break
+                async function fetchloop(): Promise<void> {
+                    if (
+                        streams[index].fileList.length ===
+                        streams[index].processedIndex
+                    ) {
+                        return
                     }
-                    if (stream.fileList.length === stream.processedIndex) {
-                        await sleep(1)
-                        continue
-                    }
-                    const fetchList: string[] = stream.fileList.slice(
-                        stream.processedIndex
+                    const fetchList: string[] = streams[index].fileList.slice(
+                        streams[index].processedIndex
                     )
-                    stream.processedIndex += fetchList.length
+                    streams[index].processedIndex += fetchList.length
                     await processURLList(
                         fetchList,
                         worker,
@@ -199,6 +200,9 @@ export function main(): Main {
                         }
                     )
                 }
+
+                fetchloop()
+                streams[index].fetchInterval = setInterval(fetchloop, 1000)
             }
         )
     }

@@ -1,6 +1,6 @@
 import { player } from "./player.js";
 import { processURLList } from "./fetch.js";
-import { sleep, randInt, slsh } from "./common/util.js";
+import { randInt, slsh } from "./common/util.js";
 function createStreams({ streams, channels, stopChannel }) {
     for (let i = 0; i < channels; i++) {
         streams[i] = {
@@ -12,9 +12,11 @@ function createStreams({ streams, channels, stopChannel }) {
             running: false,
             freshLocation: false,
             interval: 0,
+            fetchInterval: 0,
             stopChannel: () => {
                 stopChannel(i);
                 clearInterval(streams[i].interval);
+                clearInterval(streams[i].fetchInterval);
                 streams[i].running = false;
             }
         };
@@ -100,22 +102,20 @@ export function main() {
             populate();
             streams[index].interval = setInterval(populate, 5000);
             streams[index].running = true;
-            while (true) {
-                const stream = streams[index];
-                if (!stream.running) {
-                    break;
+            async function fetchloop() {
+                if (streams[index].fileList.length ===
+                    streams[index].processedIndex) {
+                    return;
                 }
-                if (stream.fileList.length === stream.processedIndex) {
-                    await sleep(1);
-                    continue;
-                }
-                const fetchList = stream.fileList.slice(stream.processedIndex);
-                stream.processedIndex += fetchList.length;
+                const fetchList = streams[index].fileList.slice(streams[index].processedIndex);
+                streams[index].processedIndex += fetchList.length;
                 await processURLList(fetchList, worker, (buffer) => {
                     if (streams[index].running)
                         feed({ channel: index, data: buffer });
                 });
             }
+            fetchloop();
+            streams[index].fetchInterval = setInterval(fetchloop, 1000);
         });
     }
     return {

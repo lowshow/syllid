@@ -60,6 +60,11 @@ function flush({
         const index: number = state.buffers[channel].length
         bufferSource.addEventListener("ended", (): void => {
             state.buffers[channel][index] = undefined
+            try {
+                bufferSource.disconnect(merger, 0, channel)
+            } catch {
+                //
+            }
         })
         state.buffers[channel].push(bufferSource)
         state.startTimes[channel] += audioBuffer.duration
@@ -122,8 +127,13 @@ export function player({
         stopChannel: (channel: number): void => {
             state.buffers[channel].forEach(
                 (buffer: AudioBufferSourceNode | undefined): void => {
-                    buffer?.disconnect(merger, 0, channel)
-                    buffer?.stop(ctx.currentTime)
+                    try {
+                        if (!buffer) return
+                        buffer.disconnect(merger, 0, channel)
+                        buffer.stop(ctx.currentTime)
+                    } catch {
+                        //
+                    }
                 }
             )
             state.samples[channel] = new Float32Array(0)
