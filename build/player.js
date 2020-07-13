@@ -41,8 +41,10 @@ export function player({ sampleRate: _sampleRate }) {
     const Ctx = window.AudioContext || window.webkitAudioContext;
     const ctx = new Ctx();
     ctx.suspend();
-    const channels = ctx.destination.maxChannelCount;
-    ctx.destination.channelCount = channels;
+    const { maxChannelCount, channelCount } = ctx.destination;
+    const channels = Math.max(maxChannelCount, channelCount);
+    if (maxChannelCount > channelCount)
+        ctx.destination.channelCount = channels;
     ctx.destination.channelInterpretation = "discrete";
     const state = {
         channels,
