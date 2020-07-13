@@ -20,8 +20,8 @@ function flush({ ctx, merger, state }) {
             try {
                 bufferSource.disconnect(merger, 0, channel);
             }
-            catch (_a) {
-                //
+            catch (e) {
+                console.warn("Buffer not disconnected on end", channel, e);
             }
         });
         state.buffers[channel].push(bufferSource);
@@ -73,8 +73,8 @@ export function player({ sampleRate: _sampleRate }) {
                     buffer.disconnect(merger, 0, channel);
                     buffer.stop(ctx.currentTime);
                 }
-                catch (_a) {
-                    //
+                catch (e) {
+                    console.warn("Buffer not disconnected on stop", channel, e);
                 }
             });
             state.samples[channel] = new Float32Array(0);

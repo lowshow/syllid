@@ -38,7 +38,7 @@ import { lstn, el, mnt, umnt } from "./common/dom.js";
                     container: outputsContainer,
                     onEvent: async ({ cOut, mode }) => {
                         if (mode) {
-                            playingChannels.push(playChannel(cOut));
+                            playingChannels[cOut] = playChannel(cOut);
                         }
                         else {
                             const { stopChannel } = await playingChannels[cOut];

@@ -62,8 +62,8 @@ function flush({
             state.buffers[channel][index] = undefined
             try {
                 bufferSource.disconnect(merger, 0, channel)
-            } catch {
-                //
+            } catch (e) {
+                console.warn("Buffer not disconnected on end", channel, e)
             }
         })
         state.buffers[channel].push(bufferSource)
@@ -131,8 +131,12 @@ export function player({
                         if (!buffer) return
                         buffer.disconnect(merger, 0, channel)
                         buffer.stop(ctx.currentTime)
-                    } catch {
-                        //
+                    } catch (e) {
+                        console.warn(
+                            "Buffer not disconnected on stop",
+                            channel,
+                            e
+                        )
                     }
                 }
             )
