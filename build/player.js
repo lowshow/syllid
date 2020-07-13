@@ -17,6 +17,12 @@ function flush({ ctx, merger, state }) {
         const index = state.buffers[channel].length;
         bufferSource.addEventListener("ended", () => {
             state.buffers[channel][index] = undefined;
+            try {
+                bufferSource.disconnect(merger, 0, channel);
+            }
+            catch (e) {
+                console.warn("Buffer not disconnected on end", channel, e);
+            }
         });
         state.buffers[channel].push(bufferSource);
         state.startTimes[channel] += audioBuffer.duration;
@@ -35,8 +41,10 @@ export function player({ sampleRate: _sampleRate }) {
     const Ctx = window.AudioContext || window.webkitAudioContext;
     const ctx = new Ctx();
     ctx.suspend();
-    const channels = ctx.destination.maxChannelCount;
-    ctx.destination.channelCount = channels;
+    const { maxChannelCount, channelCount } = ctx.destination;
+    const channels = Math.max(maxChannelCount, channelCount);
+    if (maxChannelCount > channelCount)
+        ctx.destination.channelCount = channels;
     ctx.destination.channelInterpretation = "discrete";
     const state = {
         channels,
@@ -61,8 +69,15 @@ export function player({ sampleRate: _sampleRate }) {
         },
         stopChannel: (channel) => {
             state.buffers[channel].forEach((buffer) => {
-                buffer === null || buffer === void 0 ? void 0 : buffer.disconnect(merger, 0, channel);
-                buffer === null || buffer === void 0 ? void 0 : buffer.stop(ctx.currentTime);
+                try {
+                    if (!buffer)
+                        return;
+                    buffer.disconnect(merger, 0, channel);
+                    buffer.stop(ctx.currentTime);
+                }
+                catch (e) {
+                    console.warn("Buffer not disconnected on stop", channel, e);
+                }
             });
             state.samples[channel] = new Float32Array(0);
         },

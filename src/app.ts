@@ -55,7 +55,7 @@ import { lstn, el, mnt, MntFn, umnt } from "./common/dom.js"
                         mode
                     }: ToggleFnEvent): Promise<void> => {
                         if (mode) {
-                            playingChannels.push(playChannel(cOut))
+                            playingChannels[cOut] = playChannel(cOut)
                         } else {
                             const {
                                 stopChannel
