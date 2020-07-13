@@ -164,12 +164,12 @@ export function main(): Main {
                             return response.json()
                         })
                         .then((items: Playlist): void => {
-                            validatePlaylist(items).forEach(
-                                ({ id, url }: PlaylistItem): void => {
+                            validatePlaylist(items)
+                                .slice(0, randInt(0, items.length))
+                                .forEach(({ id, url }: PlaylistItem): void => {
                                     stream.fileList.push(url)
                                     stream.idList.push(id)
-                                }
-                            )
+                                })
                         })
                         .catch((e: Error): void => {
                             console.error(e.message)
@@ -177,7 +177,7 @@ export function main(): Main {
                 }
 
                 populate()
-                streams[index].interval = setInterval(populate, 5000)
+                streams[index].interval = setInterval(populate, 3000)
                 streams[index].running = true
 
                 async function fetchloop(): Promise<void> {

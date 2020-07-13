@@ -90,7 +90,9 @@ export function main() {
                     return response.json();
                 })
                     .then((items) => {
-                    validatePlaylist(items).forEach(({ id, url }) => {
+                    validatePlaylist(items)
+                        .slice(0, randInt(0, items.length))
+                        .forEach(({ id, url }) => {
                         stream.fileList.push(url);
                         stream.idList.push(id);
                     });
@@ -100,7 +102,7 @@ export function main() {
                 });
             }
             populate();
-            streams[index].interval = setInterval(populate, 5000);
+            streams[index].interval = setInterval(populate, 3000);
             streams[index].running = true;
             async function fetchloop() {
                 if (streams[index].fileList.length ===
