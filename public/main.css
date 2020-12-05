@@ -1,49 +1,73 @@
 * {
     box-sizing: border-box;
 }
+:root {
+    --dark-100: #050505;
+    --dark-200: #0a0a0a;
+    --dark-300: #0d0d0d;
+    --off-white: #8caa9d;
+    --darkblue-200: #0a0a1a;
+    --darkblue-250: #0b0b3b;
+    --darkblue-300: #130539;
+    --darkblue-500: #0b0366;
+    --darkpurple-100: #1f002b;
+    --green-100: #072d0f;
+    --green-400: #059121;
+    --anim-time: 200ms;
+    --base-size: 16px;
+    --base-font: 'Courier New', Courier, monospace;
+}
 
 html,
 body {
     margin: 0;
     padding: 0;
     height: 100%;
-    font-size: 16px;
-    color: white;
-    font-family: Helvetica, Arial, sans-serif;
+    font-size: var(--base-size);
+    color: var(--off-white);
+    font-family: var(--base-font);
 }
 
 .root {
     min-height: 100%;
-    background: black;
+    background: var(--dark-300);
     display: flex;
     justify-content: center;
     align-items: center;
 }
 .rootInner {
+    width: 100%;
+}
+#appContainer {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 320px;
+    max-width: calc(100% - 2rem);
     padding: 10rem 1rem;
     flex-direction: column;
 }
 
 .btn {
-    font-size: 1.2rem;
+    color: var(--off-white);
+    border: none;
     padding: 1rem;
-    border-radius: 4px;
-    background: transparent;
-    color: white;
-    border: solid 2px white;
-    margin: 0;
+    text-align: center;
+    font-size: 1rem;
+    background: var(--darkblue-300);
     cursor: pointer;
-    transition: background 500ms;
-    width: 100%;
-    margin-bottom: 1rem;
+    font-family: var(--base-font);
+    border-bottom: 3px solid var(--darkblue-500);
+    border-top: 0px solid transparent;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    position: relative;
+    transition: filter var(--anim-time) ease-in-out;
 }
 
 .btn:hover {
-    background: #222;
+    filter: brightness(1.5);
 }
 textarea {
     width: 400px;
@@ -56,9 +80,8 @@ textarea {
 }
 
 .addHub {
-    width: 100%;
-    margin: 2rem 0;
     display: none;
+    margin-bottom: 2rem;
 }
 
 .addHub.visible {
@@ -73,18 +96,19 @@ textarea {
     font-size: 1rem;
     box-sizing: border-box;
     background: transparent;
-    color: white;
-    border: 2px solid white;
+    color: var(--off-white);
+    border: 2px solid var(--green-100);
     transition: border-color 500ms;
     margin-bottom: 0.5rem;
 }
 
 .addHub input:focus,
 .addHub input:hover {
-    border-color: #2cb;
+    border-color: var(--green-100);
 }
 .item__box {
-    border: 2px solid white;
+    border: 1px solid var(--green-100);
+    border-top: none;
     width: 100%;
 }
 .item__check {
@@ -96,11 +120,15 @@ textarea {
     flex-direction: column;
     cursor: pointer;
     position: relative;
-    transition: background 500ms;
+    transition: background var(--anim-time);
 }
 .item__check:not(:checked) + .item__label:hover {
     background: #222;
 }
 .item__check:checked + .item__label {
     background: #273c3c;
+}
+.item__row {
+    margin: 2rem 0;
+    border-top: 1px solid var(--green-100);
 }

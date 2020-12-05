@@ -27,3 +27,10 @@ This is the base URL hostname where sludge will be accessed
 **Additional hostnames**
 
 More hostnames (not required)
+
+## Dev
+
+```shell
+npm i
+npm run dev
+```
