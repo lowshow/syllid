@@ -41,6 +41,8 @@ export async function playerUI({ container, onEvent, outputCount }) {
 // TODO: add/rem hub UI
 // populate table with hub urls/ checkbox/ rm button
 export function hubUI({ container, hubs, onDelete }) {
+    if (hubs.length === 0)
+        return;
     const selected = [];
     const delBtn = el("button");
     delBtn.className = "btn";
@@ -56,9 +58,12 @@ export function hubUI({ container, hubs, onDelete }) {
     });
     const hubMnt = mnt(container);
     hubMnt(delBtn);
+    const hubsRow = el("div");
+    hubsRow.classList.add("item__row");
+    hubMnt(hubsRow);
     hubs.forEach((hub, index) => {
         getBox({
-            appendTo: container,
+            appendTo: hubsRow,
             id: `hub${index}`,
             labelText: hub,
             onChange: (mode) => {

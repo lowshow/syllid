@@ -78,6 +78,8 @@ export function hubUI({
     hubs: string[]
     onDelete: (hubs: number[]) => void
 }): void {
+    if (hubs.length === 0) return
+
     const selected: boolean[] = []
 
     const delBtn: HTMLButtonElement = el("button")
@@ -99,10 +101,13 @@ export function hubUI({
 
     const hubMnt: MntFn = mnt(container)
     hubMnt(delBtn)
+    const hubsRow = el("div")
+    hubsRow.classList.add("item__row")
+    hubMnt(hubsRow)
 
     hubs.forEach((hub: string, index: number): void => {
         getBox({
-            appendTo: container,
+            appendTo: hubsRow,
             id: `hub${index}`,
             labelText: hub,
             onChange: (mode: boolean): void => {
