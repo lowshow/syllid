@@ -1,21 +1,45 @@
 {
-  "name": "syllid",
-  "version": "0.0.0",
-  "description": "experimental multi-channel multi-stream audio decoder and player",
-  "main": "index.js",
-  "scripts": {
-    "dev": "./node_modules/.bin/tsc --watch",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "MIT",
-  "devDependencies": {
-    "prettier": "^2.0.4",
-    "tslint": "^6.1.1",
-    "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.8.3"
-  },
-  "dependencies": {
-    "opus-stream-decoder": "^1.2.7"
-  }
+	"name": "syllid",
+	"version": "0.0.1",
+	"description": "multi-channel multi-stream audio decoder and player",
+	"main": "build/syllid.js",
+	"scripts": {
+		"start": "npm run snowpack:dev",
+		"build": "npm run snowpack:build && npm run remove:modules",
+		"snowpack:dev": "snowpack dev",
+		"snowpack:build": "snowpack build",
+		"remove:modules": "rm -rf build/modules",
+		"lint": "eslint . --ext .js,.ts",
+		"lint:fix": "eslint . --ext .js,.ts --fix",
+		"example:build": "tsc --build example/tsconfig.json",
+		"example:serve": "node example/server",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": {
+		"name": "DROHEN",
+		"url": "https://github.com/drohen",
+		"email": "email@drohen.com"
+	},
+	"bugs": {
+		"email": "email@drohen.com",
+		"url": "https://github.com/gaxge/syllid/issues"
+	},
+	"repository": {
+		"url": "https://github.com/gaxge/syllid.git"
+	},
+	"homepage": "https://github.com/gaxge/syllid",
+	"types": "build/syllid.d.ts",
+	"files": [
+		"build/"
+	],
+	"license": "MIT",
+	"devDependencies": {
+		"@snowpack/plugin-run-script": "^2.1.0",
+		"@typescript-eslint/eslint-plugin": "^4.2.0",
+		"@typescript-eslint/parser": "^4.2.0",
+		"eslint": "^7.9.0",
+		"express": "^4.17.1",
+		"snowpack": "^2.8.0",
+		"typescript": "^4.0.3"
+	}
 }

@@ -1,0 +1,36 @@
+{
+	"mount": {
+		"src": "/"
+	},
+	"buildOptions": {
+		"installTypes": true
+	},
+	"plugins": [
+		[
+			"@snowpack/plugin-run-script",
+			{
+				"cmd": "tsc --build tsconfig.json",
+				"watch": "$1 --watch"
+			}
+		],
+		["./plugin.js", { "file": "decoder/decoderWorker.min.js" }]
+	],
+	"installOptions": {
+		"sourceMap": true
+	},
+	"experiments": {
+		"optimize": {
+			"entrypoints": ["syllid.js"],
+			"bundle": true,
+			"minify": true,
+			"target": "es2020"
+		}
+	},
+	"exclude": [
+		"example",
+		"src/modules/**/!(decoderWorker.min.js)"
+	],
+	"alias": {
+		"worker!": "./src/modules"
+	}
+}
