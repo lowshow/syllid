@@ -5,6 +5,9 @@ multi-channel multi-stream audio decoder and player
 
 ## TODO
 
+possible bug: muting one channel messes up other channels
+
+-----
 
 Different streams can have different playback modes
 Streams will play on any channel

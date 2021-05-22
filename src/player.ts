@@ -131,9 +131,7 @@ export class Player
 		{
 			try
 			{
-				if ( !buffer ) return
-
-				buffer.disconnect( this.merger, 0, channel )
+				if ( !buffer ) continue
 
 				buffer.stop( this.ctx.currentTime )
 			}

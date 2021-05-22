@@ -31,15 +31,15 @@
       ]
     },
     "player.js": {
-      "bytes": 3059,
+      "bytes": 3009,
       "imports": []
     },
-    "stream.js": {
-      "bytes": 1012,
+    "channelStream.js": {
+      "bytes": 1867,
       "imports": []
     },
     "syllid.js": {
-      "bytes": 3712,
+      "bytes": 3160,
       "imports": [
         {
           "path": "listProcessor.js",
@@ -50,7 +50,7 @@
           "kind": "import-statement"
         },
         {
-          "path": "stream.js",
+          "path": "channelStream.js",
           "kind": "import-statement"
         }
       ]
@@ -77,16 +77,16 @@
           "bytesInOutput": 661
         },
         "player.js": {
-          "bytesInOutput": 2003
+          "bytesInOutput": 1975
         },
-        "stream.js": {
-          "bytesInOutput": 673
+        "channelStream.js": {
+          "bytesInOutput": 1315
         },
         "syllid.js": {
-          "bytesInOutput": 2321
+          "bytesInOutput": 1969
         }
       },
-      "bytes": 211808
+      "bytes": 212070
     }
   }
 }
