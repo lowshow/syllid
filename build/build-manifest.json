@@ -1,0 +1,92 @@
+{
+  "inputs": {
+    "__snowpack__/env.js": {
+      "bytes": 73,
+      "imports": []
+    },
+    "modules/opus-recorder/dist/decoder/decoderWorker.min.js": {
+      "bytes": 205639,
+      "imports": []
+    },
+    "workerWrapper.js": {
+      "bytes": 1609,
+      "imports": [
+        {
+          "path": "__snowpack__/env.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "modules/opus-recorder/dist/decoder/decoderWorker.min.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "listProcessor.js": {
+      "bytes": 1167,
+      "imports": [
+        {
+          "path": "workerWrapper.js",
+          "kind": "import-statement"
+        }
+      ]
+    },
+    "player.js": {
+      "bytes": 3059,
+      "imports": []
+    },
+    "stream.js": {
+      "bytes": 1012,
+      "imports": []
+    },
+    "syllid.js": {
+      "bytes": 3712,
+      "imports": [
+        {
+          "path": "listProcessor.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "player.js",
+          "kind": "import-statement"
+        },
+        {
+          "path": "stream.js",
+          "kind": "import-statement"
+        }
+      ]
+    }
+  },
+  "outputs": {
+    "../node_modules/.cache/snowpack/~~bundle~~/syllid.js": {
+      "imports": [],
+      "exports": [
+        "Syllid"
+      ],
+      "entryPoint": "syllid.js",
+      "inputs": {
+        "__snowpack__/env.js": {
+          "bytesInOutput": 55
+        },
+        "modules/opus-recorder/dist/decoder/decoderWorker.min.js": {
+          "bytesInOutput": 205150
+        },
+        "workerWrapper.js": {
+          "bytesInOutput": 924
+        },
+        "listProcessor.js": {
+          "bytesInOutput": 661
+        },
+        "player.js": {
+          "bytesInOutput": 2003
+        },
+        "stream.js": {
+          "bytesInOutput": 673
+        },
+        "syllid.js": {
+          "bytesInOutput": 2321
+        }
+      },
+      "bytes": 211808
+    }
+  }
+}

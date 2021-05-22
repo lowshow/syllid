@@ -1,0 +1,13 @@
+.DS_Store
+node_modules
+.eslintignore
+.eslintrc
+modules
+src
+example
+.vscode
+.github
+snowpack.config.json
+tsconfig.json
+typings
+plugin.js

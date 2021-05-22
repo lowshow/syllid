@@ -2,7 +2,6 @@
 	"compilerOptions": {
 		"module": "esnext",
 		"target": "esnext",
-		"moduleResolution": "node",
 		"allowSyntheticDefaultImports": true,
 		"importsNotUsedAsValues": "error",
 		/* more strict checking for errors that per-file transpilers like `esbuild` would crash */
@@ -11,7 +10,7 @@
 		"noEmit": false,
 		/* Additional Options */
 		"strict": true,
-		// "skipLibCheck": true,
+		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true,
 		"useDefineForClassFields": true,
 		// You can't currently define paths in your 'extends' config,
@@ -19,26 +18,16 @@
 		// Don't change these unless you know what you're doing.
 		// See: https://github.com/microsoft/TypeScript/issues/25430
 		"baseUrl": "./",
-		"paths": {
-			"*": [
-				"web_modules/.types/*"
-			]
-		},
 		"lib": [
 		    "es2020",
 		    "dom",
-		],
-		"declaration": true,
-		"emitDeclarationOnly": true,
-		"declarationMap": true,
-		"declarationDir": "build"
+		]
 	},
 	"include": [
-		"src",
-		"typings"
+		"index.ts",	
 	],
 	"exclude": [
 		"node_modules",
-		"example/server"
+		"server"
 	]
 }

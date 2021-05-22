@@ -1,36 +1,30 @@
-# syllid &bull; experimental audio decoder and multi player
+# syllid &bull; audio decoder and player
 
-experimental multi-channel multi-stream audio decoder and player
+multi-channel multi-stream audio decoder and player
 
-## Summary
 
-This project is a component of [\_noisecrypt](low.show/noisecrypt/). The component acts as a decoding and playback interface, where a list of audio stream segments are provided by an endpoint and the segments are sequentially downloaded, decoded and passed to the web audio api for output on a selected output channel. Random endpoints are provided by adding [sortition](https://github.com/lowshow/sortition) hubs that contain references to the endpoints of [sludge](https://github.com/lowshow/sludge) servers. The sludge servers are stores for audio segments created when recording using the [splutter](https://github.com/lowshow/splutter) app. The sludge app has an open CORS permission on the endpoint provided, so the syllid app can make requests to any given sludge domain.
+## TODO
 
-## Setup
 
-### UI
+Different streams can have different playback modes
+Streams will play on any channel
+A channel is "playing" based on the playing state of the stream
 
-```shell
-make init
-```
+- A stream therefore needs its own buffer
+- A stream's connectivity/buffering/playback is based on its playing state
+- A stream needs to provide updates on its no data/buffering/playing state
 
-NOTE: You will need to provide values for these variables
+Utilisation of audio worklet for ring buffer, with fallback
+	- borrowing implementation ideas from splutter
+	- tiny fade between buffers to prevent clicks/pops
 
-**Nginx port**
 
-This is the port from which the nginx proxy server for sludge will run
+- playback modes
+	- latest (live)
+	- normal (w/ seek)
+	- random (random start point)
 
-**Service hostname**
-
-This is the base URL hostname where sludge will be accessed
-
-**Additional hostnames**
-
-More hostnames (not required)
-
-## Dev
-
-```shell
-npm i
-npm run dev
-```
+- channel choice
+	- urls (listen/group) played through only active channels (not muted)
+	- normal/latest plays as normal through all active channels
+	- random will play random data through any active channel
