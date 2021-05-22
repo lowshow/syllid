@@ -18,10 +18,8 @@ class App implements SyllidContextInterface
 	private start()
 	{
 		this.syllid?.addURL( new URL( `/playlist`, window.origin ) )
-			.then( () =>
-			{
-				this.syllid?.playChannel( 0 )
-			} )
+		
+		this.syllid?.playChannel( 0 )
 	}
 
 	private playAudio()

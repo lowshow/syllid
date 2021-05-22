@@ -36,9 +36,7 @@ export class Syllid implements StreamHandler, ListProcessorHandler
 	 * 
 	 * @param context Interface to the context importing this lib
 	 */
-	constructor(
-		private context: SyllidContextInterface
-	) 
+	constructor( private context: SyllidContextInterface ) 
 	{
 		this.onBuffer = this.onBuffer.bind( this )
 		
@@ -80,7 +78,7 @@ export class Syllid implements StreamHandler, ListProcessorHandler
 	{
 		if ( to < from ) return from
 		
-		return ~~( Math.random() * ( to - from ) + from )
+		return Math.floor( Math.random() * ( to - from ) + from )
 	}
 
 	private validatePlaylist( items: Playlist ): Playlist 
@@ -119,13 +117,15 @@ export class Syllid implements StreamHandler, ListProcessorHandler
 	{
 		const stream = this.streams[ index ]
 
-		stream.setFreshLocation( this.locations[ this.randomInt( 0, this.locations.length ) ] )
+		const randomLocation = this.locations[ this.randomInt( 0, this.locations.length ) ]
 
-		const path: string = stream.getPath()
+		const path: string = stream.getPath( randomLocation )
 
 		if ( !path ) return
 
-		fetch( path )
+		// start=random query required to hint server
+		// to return samples from a random start point
+		fetch( `${path}?start=random` )
 			.then( response => 
 			{
 				stream.setStaleLocation( this.addSlash( response.url ) )
@@ -194,27 +194,24 @@ export class Syllid implements StreamHandler, ListProcessorHandler
 		} )
 	}
 
-	public addURL( url: URL ): Promise<this> 
+	public addURL( url: URL ): this
 	{
-		return new Promise( ( resolve, reject ) => 
+		try
 		{
-			try
-			{
-				const index = this.locations.length
+			const index = this.locations.length
 
-				const _url = url.toString()
+			const _url = url.toString()
 
-				this.urlLocationMap[ _url ] = index
+			this.urlLocationMap[ _url ] = index
 
-				this.locations.push( this.addSlash( _url ) )
+			this.locations.push( this.addSlash( _url ) )
 
-				resolve( this )
-			}
-			catch
-			{
-				reject( `${url} is not a valid URL.` )
-			}
-		} )
+			return this
+		}
+		catch
+		{
+			throw Error( `${url} is not a valid URL.` )
+		}
 	}
 
 	public removeURL( url: URL ): this

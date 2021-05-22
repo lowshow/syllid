@@ -52,7 +52,7 @@ export class Stream
 		this.fetchInterval = 0
 	}
 
-	public setFreshLocation( location: string ): void
+	private setFreshLocation( location: string ): void
 	{
 		if ( this.count > 0 ) return
 
@@ -80,8 +80,10 @@ export class Stream
 		this.handler.onStopChannel( this.index )
 	}
 
-	public getPath(): string 
+	public getPath( location: string ): string 
 	{
+		this.setFreshLocation( location )
+
 		this.count = this.count - 1
 
 		return this.idList.length > 0

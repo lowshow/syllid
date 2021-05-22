@@ -35,11 +35,11 @@
       "imports": []
     },
     "stream.js": {
-      "bytes": 967,
+      "bytes": 1012,
       "imports": []
     },
     "syllid.js": {
-      "bytes": 3743,
+      "bytes": 3712,
       "imports": [
         {
           "path": "listProcessor.js",
@@ -80,13 +80,13 @@
           "bytesInOutput": 2003
         },
         "stream.js": {
-          "bytesInOutput": 647
+          "bytesInOutput": 673
         },
         "syllid.js": {
-          "bytesInOutput": 2331
+          "bytesInOutput": 2321
         }
       },
-      "bytes": 211792
+      "bytes": 211808
     }
   }
 }

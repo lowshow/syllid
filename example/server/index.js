@@ -27,6 +27,8 @@ const streamId = `12345`
 
 const urls = ids.map(id => ({streamId, id, url: `http://localhost:${PORT}/audio/${id}.opus`}))
 
+const fromID = id => [...urls.slice(mapped[id]), ...urls.slice(0, mapped[id])]
+
 const app = express()
 
 app.use(express.static('example'))
@@ -39,10 +41,15 @@ app.get('/decoderWorker.min.wasm', (req, res) => res.redirect(`/build/decoderWor
 
 app.get('/playlist/:id', (req, res) =>
 {
-	res.json([...urls.slice(mapped[req.params.id]), ...urls.slice(0, mapped[req.params.id])])
+	res.json(fromID(req.params.id))
 })
 
-app.get('/playlist', (req, res) => res.json(urls))
+app.get('/playlist', (req, res) =>
+{
+	if (req.query.start === `random`)
+		res.json(fromID(ids[Math.floor(Math.random() * ids.length)]))
+	else res.json(urls)
+})
 
 console.log("Listening on PORT", PORT)
 

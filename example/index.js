@@ -8,10 +8,8 @@ class App {
         btn.addEventListener(`click`, this.playAudio);
     }
     start() {
-        this.syllid?.addURL(new URL(`/playlist`, window.origin))
-            .then(() => {
-            this.syllid?.playChannel(0);
-        });
+        this.syllid?.addURL(new URL(`/playlist`, window.origin));
+        this.syllid?.playChannel(0);
     }
     playAudio() {
         if (!this.syllid) {

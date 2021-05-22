@@ -18,9 +18,9 @@ export declare class Stream {
     interval: number;
     fetchInterval: number;
     constructor(index: number, handler: StreamHandler, provider: StreamProvider);
-    setFreshLocation(location: string): void;
+    private setFreshLocation;
     setStaleLocation(location: string): void;
     stopChannel(): void;
-    getPath(): string;
+    getPath(location: string): string;
 }
 //# sourceMappingURL=stream.d.ts.map

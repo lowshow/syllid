@@ -5,6 +5,20 @@ multi-channel multi-stream audio decoder and player
 
 ## TODO
 
+
+Different streams can have different playback modes
+Streams will play on any channel
+A channel is "playing" based on the playing state of the stream
+
+- A stream therefore needs its own buffer
+- A stream's connectivity/buffering/playback is based on its playing state
+- A stream needs to provide updates on its no data/buffering/playing state
+
+Utilisation of audio worklet for ring buffer, with fallback
+	- borrowing implementation ideas from splutter
+	- tiny fade between buffers to prevent clicks/pops
+
+
 - playback modes
 	- latest (live)
 	- normal (w/ seek)
