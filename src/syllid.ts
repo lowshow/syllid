@@ -117,6 +117,11 @@ export class Syllid implements StreamHandler, ListProcessorHandler
 		fetch( `${path}?start=random` )
 			.then( response => 
 			{
+				/**
+				 * Because of redirects, the actual url we want
+				 * to store is the one that fulfilled our request,
+				 * this is why response.url is passed to this method
+				 */
 				stream.setStaleLocation( this.addSlash( response.url ) )
 
 				return response.json()

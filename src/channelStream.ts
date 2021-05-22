@@ -60,39 +60,18 @@ export class ChannelStream
 		this.fetchInterval = 0
 	}
 
-	private setFreshLocation( location: string ): void
-	{
-		if ( this.count > 0 ) return
-
-		this.count = this.provider.randomInt( 0, 5 )
-
-		this.location = location
-
-		this.idList = []
-
-		this.freshLocation = true
-	}
-
-	public setStaleLocation( location: string ): void
-	{
-		if ( this.freshLocation )
-		{
-			this.location = location
-			
-			this.freshLocation = false
-		}
-	}
-
 	public start(): void
 	{
+		if ( this.running ) return
+		
+		this.running = true
+
 		this.provider.getSegmentURLs( this )
 
 		this.processURLs()
 
 		this.interval = window.setInterval( () => 
 			this.provider.getSegmentURLs( this ), 3000 )
-
-		this.running = true
 
 		this.fetchInterval = window.setInterval( () => 
 			this.processURLs(), 1000 )
@@ -134,6 +113,29 @@ export class ChannelStream
 				this.location
 			).toString()
 			: this.location
+	}
+
+	private setFreshLocation( location: string ): void
+	{
+		if ( this.count > 0 ) return
+
+		this.count = this.provider.randomInt( 0, 5 )
+
+		this.location = location
+
+		this.idList = []
+
+		this.freshLocation = true
+	}
+
+	public setStaleLocation( location: string ): void
+	{
+		if ( this.freshLocation )
+		{
+			this.location = location
+			
+			this.freshLocation = false
+		}
 	}
 
 	public addItemsFromPlaylist( playlist: Playlist ): void

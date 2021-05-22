@@ -5,7 +5,7 @@ multi-channel multi-stream audio decoder and player
 
 ## TODO
 
-Bug, muting one channel messes up other channels
+possible bug: muting one channel messes up other channels
 
 -----
 
