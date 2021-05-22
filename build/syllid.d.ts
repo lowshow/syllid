@@ -1,5 +1,5 @@
 import { ListProcessorHandler } from "./listProcessor";
-import { Stream, StreamHandler } from "./stream";
+import { ChannelStream, StreamHandler } from "./channelStream";
 export interface SyllidContextInterface {
     sampleRate: () => number;
     onWarning: (message: string | Error | ErrorEvent) => void;
@@ -18,14 +18,15 @@ export declare class Syllid implements StreamHandler, ListProcessorHandler {
      */
     constructor(context: SyllidContextInterface);
     private createStreams;
-    onStopChannel(index: number): void;
+    getChannels(): number;
     randomInt(from: number, to: number): number;
     private validatePlaylist;
     private addSlash;
-    private populate;
-    private fetchloop;
+    getSegmentURLs(stream: ChannelStream): void;
+    bufferSegmentData(fetchList: string[], index: number): Promise<void>;
     onBuffer(buffer: Float32Array, index: number): void;
-    playChannel(index: number): Promise<Stream>;
+    playChannel(index: number): void;
+    stopChannel(index: number): void;
     addURL(url: URL): this;
     removeURL(url: URL): this;
     stop(): this;

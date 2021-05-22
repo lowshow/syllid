@@ -1,14 +1,16 @@
 export interface StreamHandler
 {
-	onStopChannel: ( index: number ) => void
+	bufferSegmentData: ( fileList: string[], index: number ) => Promise<void>
 }
 
 export interface StreamProvider
 {
 	randomInt: ( min: number, max: number ) => number
+
+	getSegmentURLs: ( stream: ChannelStream ) => void
 }
 
-export class Stream
+export class ChannelStream
 {
 	public fileList: string[]
 
@@ -33,6 +35,12 @@ export class Stream
 		private handler: StreamHandler,
 		private provider: StreamProvider )
 	{
+		this.start = this.start.bind( this )
+
+		this.stop = this.stop.bind( this )
+
+		this.processURLs = this.processURLs.bind( this )
+		
 		this.count = 0
 
 		this.fileList = []
@@ -74,10 +82,44 @@ export class Stream
 			this.freshLocation = false
 		}
 	}
-	
-	public stopChannel(): void
+
+	public start(): void
 	{
-		this.handler.onStopChannel( this.index )
+		this.provider.getSegmentURLs( this )
+
+		this.processURLs()
+
+		this.interval = window.setInterval( () => 
+			this.provider.getSegmentURLs( this ), 3000 )
+
+		this.running = true
+
+		this.fetchInterval = window.setInterval( () => 
+			this.processURLs(), 1000 )
+	}
+
+	private processURLs()
+	{
+		// All queued files have been or are being processed for this stream
+		if ( this.fileList.length === this.processedIndex )
+			return
+
+		const fetchList = this.fileList.slice(
+			this.processedIndex
+		)
+
+		this.processedIndex += fetchList.length
+
+		this.handler.bufferSegmentData( fetchList, this.index )
+	}
+	
+	public stop(): void
+	{
+		clearInterval( this.interval )
+
+		clearInterval( this.fetchInterval )
+
+		this.running = false
 	}
 
 	public getPath( location: string ): string 
@@ -92,5 +134,15 @@ export class Stream
 				this.location
 			).toString()
 			: this.location
+	}
+
+	public addItemsFromPlaylist( playlist: Playlist ): void
+	{
+		for ( const { id, url } of playlist )
+		{
+			this.fileList.push( url )
+
+			this.idList.push( id )
+		}
 	}
 }
