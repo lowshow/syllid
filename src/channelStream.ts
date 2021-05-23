@@ -122,7 +122,9 @@ export class ChannelStream
 				`${this.idList[ this.idList.length - 1 ]}`,
 				this.location
 			).toString()
-			: this.addQuery( this.location )
+			: !this.location // if empty value
+				? this.location
+				: this.addQuery( this.location )
 	}
 
 	private setFreshLocation( location: string ): void
