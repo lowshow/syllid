@@ -83,16 +83,16 @@ export class Syllid implements StreamHandler, ListProcessorHandler
 		{
 			try 
 			{
-				new URL( i.url ).toString()
+				new URL( i.segmentURL ).toString()
 			}
 			catch
 			{
-				throw Error( `${i.url} in playlist is invalid URL.` )
+				throw Error( `${i.segmentURL} in playlist is invalid URL.` )
 			}
 
-			if ( !i.id || typeof i.id !== `string` ) 
+			if ( !i.segmentID || typeof i.segmentID !== `string` ) 
 			{
-				throw Error( `${i.id || `Missing ID`} in playlist is invalid ID.` )
+				throw Error( `${i.segmentID || `Missing ID`} in playlist is invalid ID.` )
 			}
 		} )
 
@@ -114,7 +114,7 @@ export class Syllid implements StreamHandler, ListProcessorHandler
 
 		// start=random query required to hint server
 		// to return samples from a random start point
-		fetch( `${path}?start=random` )
+		fetch( path )
 			.then( response => 
 			{
 				/**

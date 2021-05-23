@@ -1,6 +1,6 @@
 {
 	"name": "syllid",
-	"version": "0.1.0",
+	"version": "1.0.0",
 	"description": "multi-channel multi-stream audio decoder and player",
 	"main": "build/syllid.js",
 	"scripts": {

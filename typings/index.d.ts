@@ -11,9 +11,9 @@ declare module "worker!*" {
 
 interface PlaylistItem
 {
-	id: string
-	streamId: string
-	url: string
+	segmentID: string
+	streamPublicID: string
+	segmentURL: string
 }
     
 type Playlist = PlaylistItem[]
