@@ -19,12 +19,13 @@ export declare class ChannelStream {
     interval: number;
     fetchInterval: number;
     constructor(index: number, handler: StreamHandler, provider: StreamProvider);
-    private setFreshLocation;
-    setStaleLocation(location: string): void;
+    private addQuery;
     start(): void;
     private processURLs;
     stop(): void;
     getPath(location: string): string;
+    private setFreshLocation;
+    setStaleLocation(location: string): void;
     addItemsFromPlaylist(playlist: Playlist): void;
 }
 //# sourceMappingURL=channelStream.d.ts.map

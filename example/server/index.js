@@ -23,9 +23,14 @@ const ids = [
 
 const mapped = ids.reduce((obj, curr, i) => ({...obj, [curr]: i}), {})
 
-const streamId = `12345`
+const streamPublicID = `12345`
 
-const urls = ids.map(id => ({streamId, id, url: `http://localhost:${PORT}/audio/${id}.opus`}))
+const urls = ids.map(segmentID =>
+	({
+		streamPublicID,
+		segmentID,
+		segmentURL: `http://localhost:${PORT}/audio/${segmentID}.opus`
+	}))
 
 const fromID = id => [...urls.slice(mapped[id]), ...urls.slice(0, mapped[id])]
 

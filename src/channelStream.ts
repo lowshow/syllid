@@ -60,6 +60,16 @@ export class ChannelStream
 		this.fetchInterval = 0
 	}
 
+	private addQuery( url: string ): string
+	{
+		const _url = new URL( url )
+
+		if( !_url.searchParams.has( `start` ) )
+			_url.searchParams.append( `start`, `random` )
+
+		return _url.toString()
+	}
+
 	public start(): void
 	{
 		if ( this.running ) return
@@ -112,7 +122,7 @@ export class ChannelStream
 				`${this.idList[ this.idList.length - 1 ]}`,
 				this.location
 			).toString()
-			: this.location
+			: this.addQuery( this.location )
 	}
 
 	private setFreshLocation( location: string ): void
@@ -140,11 +150,11 @@ export class ChannelStream
 
 	public addItemsFromPlaylist( playlist: Playlist ): void
 	{
-		for ( const { id, url } of playlist )
+		for ( const { segmentID, segmentURL } of playlist )
 		{
-			this.fileList.push( url )
+			this.fileList.push( segmentURL )
 
-			this.idList.push( id )
+			this.idList.push( segmentID )
 		}
 	}
 }
