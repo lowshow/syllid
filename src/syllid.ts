@@ -1,5 +1,5 @@
 import { ListProcessor, ListProcessorHandler } from "./listProcessor"
-import { Player } from "./player"
+import { Player, PlayerHandler } from "./player"
 import { ChannelStream, StreamHandler } from "./channelStream"
 
 export interface SyllidContextInterface
@@ -8,10 +8,10 @@ export interface SyllidContextInterface
 
 	onWarning: ( message: string | Error | ErrorEvent ) => void
 
-	onFailure: ( error: Error ) => void
+	onFailure: ( error: string | Error | ErrorEvent ) => void
 }
 
-export class Syllid implements StreamHandler, ListProcessorHandler
+export class Syllid implements StreamHandler, ListProcessorHandler, PlayerHandler
 {
 	private locations: string[]
 
@@ -41,7 +41,7 @@ export class Syllid implements StreamHandler, ListProcessorHandler
 
 		this.urlLocationMap = {}
 
-		this.player = new Player( this.context.sampleRate() )
+		this.player = new Player( this.context.sampleRate(), this )
 
 		this.processor = new ListProcessor( this )
 
@@ -117,6 +117,11 @@ export class Syllid implements StreamHandler, ListProcessorHandler
 		fetch( path )
 			.then( response => 
 			{
+				if ( response.status !== 200 )
+				{
+					throw Error( `Invalid response from endpoint.` )
+				}
+
 				/**
 				 * Because of redirects, the actual url we want
 				 * to store is the one that fulfilled our request,
@@ -130,7 +135,7 @@ export class Syllid implements StreamHandler, ListProcessorHandler
 				this.validatePlaylist( items )
 					.slice( 0, this.randomInt( 0, items.length ) ) )
 			.then( items => stream.addItemsFromPlaylist( items ) )
-			.catch( ( e: Error ) => console.error( e.message ) )
+			.catch( ( e: Error ) => this.context.onWarning( e.message ) )
 	}
 
 	public async bufferSegmentData( fetchList: string[], index: number ): Promise<void> 
@@ -203,12 +208,12 @@ export class Syllid implements StreamHandler, ListProcessorHandler
 		return this
 	}
 
-	public onWarning( message: string ): void 
+	public onWarning( message: string | Error | ErrorEvent ): void 
 	{
 		this.context.onWarning( message )
 	}
 
-	public onFailure( error: Error ): void 
+	public onFailure( error: string | Error | ErrorEvent ): void 
 	{
 		this.context.onFailure( error )
 	}

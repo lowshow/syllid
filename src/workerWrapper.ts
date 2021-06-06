@@ -3,6 +3,8 @@ import worker from "worker!/opus-recorder/dist/decoder/decoderWorker.min.js"
 export interface WorkerWrapperHandler
 {
 	onBuffer: ( buffer: Float32Array, index: number ) => void
+
+	onFailure: ( error: string | Error | ErrorEvent ) => void
 }
 
 export class WorkerWrapper
@@ -28,7 +30,7 @@ export class WorkerWrapper
 
 		this.worker.onmessage = this.onMessage
 
-		this.worker.onerror = err => console.error( err )
+		this.worker.onerror = err => this.handler.onFailure( err )
 
 		this.worker.postMessage( { 
 			command: `init`,

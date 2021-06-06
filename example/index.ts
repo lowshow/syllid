@@ -121,7 +121,7 @@ class App implements SyllidContextInterface
 		console.warn( message )
 	}
 
-	public onFailure( error: Error ): void
+	public onFailure( error: string | Error | ErrorEvent ): void
 	{
 		console.error( error )
 	}
