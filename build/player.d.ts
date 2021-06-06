@@ -1,5 +1,9 @@
+export interface PlayerHandler {
+    onWarning: (error: string | Error) => void;
+}
 export declare class Player {
     private sampleRate;
+    private handler;
     channels: number;
     private flushingTime;
     private merger;
@@ -8,7 +12,7 @@ export declare class Player {
     private interval;
     private buffers;
     private ctx;
-    constructor(sampleRate: number);
+    constructor(sampleRate: number, handler: PlayerHandler);
     private flush;
     feed(channel: number, data: Float32Array): void;
     stopChannel(channel: number): void;

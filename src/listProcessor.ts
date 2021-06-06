@@ -7,6 +7,8 @@ type Reader = ReadableStreamDefaultReader<Uint8Array>
 export interface ListProcessorHandler
 {
 	onBuffer: ( buffer: Float32Array, index: number ) => void
+
+	onFailure: ( error: string | Error | ErrorEvent ) => void
 }
 
 export class ListProcessor implements WorkerWrapperHandler
@@ -15,11 +17,15 @@ export class ListProcessor implements WorkerWrapperHandler
 
 	public onBuffer: ( buffer: Float32Array, index: number ) => void
 
+	public onFailure: ( error: string | Error | ErrorEvent ) => void
+
 	constructor( private handler: ListProcessorHandler, private sampleRate: number = 48000 )
 	{
 		this.workers = []
 
 		this.onBuffer = this.handler.onBuffer
+
+		this.onFailure = this.handler.onFailure
 	}
 
 	private createWorkerForIndex( index: number )
@@ -47,20 +53,27 @@ export class ListProcessor implements WorkerWrapperHandler
 
 		for ( const file of fileList )
 		{
-			const response = await fetch( file )
+			try
+			{
+				const response = await fetch( file )
 
-			if ( !response.ok )
-				throw Error(
-					`Invalid Response: ${response.status} ${response.statusText}`
-				)
+				if ( !response.ok )
+					throw Error(
+						`Invalid Response: ${response.status} ${response.statusText}`
+					)
 
-			if ( !response.body ) throw Error( `ReadableStream not supported.` )
-		
-			const reader = response.body.getReader()
-		
-			this.workers[ index ].queueFile( file )
+				if ( !response.body ) throw Error( `ReadableStream not supported.` )
+			
+				const reader = response.body.getReader()
+			
+				this.workers[ index ].queueFile( file )
 
-			await reader.read().then( res => this.evalChunk( reader, file, res, index ) )
+				await reader.read().then( res => this.evalChunk( reader, file, res, index ) )	
+			}
+			catch ( e )
+			{
+				this.handler.onFailure( e )
+			}
 		}
 	}
 }

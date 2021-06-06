@@ -1,5 +1,6 @@
 export interface WorkerWrapperHandler {
     onBuffer: (buffer: Float32Array, index: number) => void;
+    onFailure: (error: string | Error | ErrorEvent) => void;
 }
 export declare class WorkerWrapper {
     private index;

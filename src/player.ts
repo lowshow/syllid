@@ -1,3 +1,8 @@
+export interface PlayerHandler
+{
+	onWarning: ( error: string | Error ) => void
+}
+
 export class Player
 {
 	public channels: number
@@ -16,7 +21,7 @@ export class Player
 
 	private ctx: AudioContext
 
-	constructor( private sampleRate: number )
+	constructor( private sampleRate: number, private handler: PlayerHandler )
 	{
 		this.init = this.init.bind( this )
 
@@ -102,7 +107,9 @@ export class Player
 				}
 				catch ( e ) 
 				{
-					console.warn( `Buffer not disconnected on end`, channel, e )
+					this.handler.onWarning( `Buffer not disconnected on end ${channel}` )
+
+					this.handler.onWarning( e )
 				}
 			} )
 
@@ -131,19 +138,15 @@ export class Player
 		{
 			try
 			{
-				if ( !buffer ) return
-
-				buffer.disconnect( this.merger, 0, channel )
+				if ( !buffer ) continue
 
 				buffer.stop( this.ctx.currentTime )
 			}
 			catch ( e )
 			{
-				console.warn(
-					`Buffer not disconnected on stop`,
-					channel,
-					e
-				)
+				this.handler.onWarning( `Buffer not disconnected on stop ${channel}` )
+
+				this.handler.onWarning( e )
 			}
 		}
 

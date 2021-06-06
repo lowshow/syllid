@@ -9,7 +9,7 @@
       "imports": []
     },
     "workerWrapper.js": {
-      "bytes": 1609,
+      "bytes": 1618,
       "imports": [
         {
           "path": "__snowpack__/env.js",
@@ -22,7 +22,7 @@
       ]
     },
     "listProcessor.js": {
-      "bytes": 1167,
+      "bytes": 1303,
       "imports": [
         {
           "path": "workerWrapper.js",
@@ -31,15 +31,15 @@
       ]
     },
     "player.js": {
-      "bytes": 3059,
+      "bytes": 3136,
       "imports": []
     },
-    "stream.js": {
-      "bytes": 1012,
+    "channelStream.js": {
+      "bytes": 2152,
       "imports": []
     },
     "syllid.js": {
-      "bytes": 3712,
+      "bytes": 3293,
       "imports": [
         {
           "path": "listProcessor.js",
@@ -50,7 +50,7 @@
           "kind": "import-statement"
         },
         {
-          "path": "stream.js",
+          "path": "channelStream.js",
           "kind": "import-statement"
         }
       ]
@@ -71,22 +71,22 @@
           "bytesInOutput": 205150
         },
         "workerWrapper.js": {
-          "bytesInOutput": 924
+          "bytesInOutput": 933
         },
         "listProcessor.js": {
-          "bytesInOutput": 661
+          "bytesInOutput": 737
         },
         "player.js": {
-          "bytesInOutput": 2003
+          "bytesInOutput": 2066
         },
-        "stream.js": {
-          "bytesInOutput": 673
+        "channelStream.js": {
+          "bytesInOutput": 1506
         },
         "syllid.js": {
-          "bytesInOutput": 2321
+          "bytesInOutput": 2072
         }
       },
-      "bytes": 211808
+      "bytes": 212540
     }
   }
 }

@@ -4,25 +4,90 @@ class App implements SyllidContextInterface
 {
 	private syllid?: Syllid
 
+	private el: HTMLElement
+
+	private startBtn: HTMLButtonElement
+
 	constructor()
 	{
-		this.playAudio = this.playAudio.bind( this )
+		this.load = this.load.bind( this )
 
-		const btn = document.querySelector( `#startBtn` )
+		this.btnClick = this.btnClick.bind( this )
 
-		if ( !btn ) throw Error( `No btn` )
+		this.el = this.getEl( `#main` )
 
-		btn.addEventListener( `click`, this.playAudio )
+		this.startBtn = this.getEl( `#startBtn` )
+
+		this.startBtn.addEventListener( `click`, this.load )
+	}
+
+	private existsOrThrow<T>( item: unknown, selector: string )
+	{
+		if ( !item )
+		{
+			throw Error( `No item ${selector}` )
+		}
+
+		return item as T
+	}
+
+	private getEl<T extends HTMLElement>( selector: string ): T
+	{
+		return this.existsOrThrow( document.querySelector( selector ), selector )
+	}
+
+	private btnClick( event: MouseEvent )
+	{
+		const btn = event.target as HTMLButtonElement
+
+		const channel = parseInt( btn.dataset.channel ?? `-1`, 10 )
+
+		const state = btn.dataset.state
+
+		if ( state === `mute` )
+		{
+			this.syllid?.playChannel( channel )
+
+			btn.textContent = `Mute channel ${channel}`
+
+			btn.dataset.state = `playing`
+		}
+		else
+		{
+			this.syllid?.stopChannel( channel )
+
+			btn.textContent = `Play channel ${channel}`
+
+			btn.dataset.state = `mute`
+		}
+	}
+
+	private btn( channel: number )
+	{
+		const b = document.createElement( `button` )
+
+		b.textContent = `Play channel ${channel}`
+
+		b.dataset.channel = `${channel}`
+
+		b.dataset.state = `mute`
+
+		b.addEventListener( `click`, this.btnClick )
+
+		this.el.appendChild( b )
 	}
 
 	private start()
 	{
 		this.syllid?.addURL( new URL( `/playlist`, window.origin ) )
-		
-		this.syllid?.playChannel( 0 )
+
+		for ( let c = 0; c < ( this.syllid?.getChannels() ?? 0 ); c++ )
+		{
+			this.btn( c )
+		}
 	}
 
-	private playAudio()
+	private load()
 	{
 		if ( !this.syllid )
 		{
@@ -37,6 +102,8 @@ class App implements SyllidContextInterface
 		{
 			this.start()
 		}
+		
+		this.startBtn.remove()
 	}
 
 	public static init()
@@ -54,7 +121,7 @@ class App implements SyllidContextInterface
 		console.warn( message )
 	}
 
-	public onFailure( error: Error ): void
+	public onFailure( error: string | Error | ErrorEvent ): void
 	{
 		console.error( error )
 	}
